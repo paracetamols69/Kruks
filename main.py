@@ -1,4 +1,6 @@
 ﻿import viz
+import vizact
+import vizcam
 import vizshape
 import math
 import time
@@ -14,14 +16,37 @@ viz.mouse.setOverride(viz.ON)
 viz.window.setName("kruks")
 
 
-viz.clearcolor(viz.SKYBLUE)
-
 floor = vizshape.addPlane(size=(50,50), axis=vizshape.AXIS_Y, cullFace=False)
 floor.setPosition(0, 0, 0)
 floor.color(viz.RED)
 
 viz.MainView.setPosition([0, 1.8, 0])
 
+viz.setOption('ambient', 0.12)
+viz.MainScene.fogColor(0,0,0)
+viz.MainScene.fog(0, 30)
+
+light = viz.addLight()
+light.enable()
+light.color(1,1,1)
+light.spread(25)
+light.intensity(3.5)
+light.spotexponent(40)
+
+def update_flashlight():
+	pos = viz.MainView.getPosition()
+	yaw, pitch, roll = viz.MainView.getEuler()
+	yaw = math.radians(yaw)
+	pitch = math.radians(pitch)
+	
+	dx = math.sin(yaw)
+	dy = -math.sin(pitch)
+	dz = math.cos(yaw)
+	
+	light.position(pos[0], pos[1], pos[2])
+	light.direction(dx, dy, dz)
+
+vizact.ontimer(0, update_flashlight)
 
 # === keyboard ===
 
