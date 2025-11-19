@@ -22,31 +22,9 @@ floor.color(viz.RED)
 
 viz.MainView.setPosition([0, 1.8, 0])
 
-viz.setOption('ambient', 0.12)
-viz.MainScene.fogColor(0,0,0)
-viz.MainScene.fog(0, 30)
-
-light = viz.addLight()
-light.enable()
-light.color(1,1,1)
-light.spread(25)
-light.intensity(3.5)
-light.spotexponent(40)
-
-def update_flashlight():
-	pos = viz.MainView.getPosition()
-	yaw, pitch, roll = viz.MainView.getEuler()
-	yaw = math.radians(yaw)
-	pitch = math.radians(pitch)
-	
-	dx = math.sin(yaw)
-	dy = -math.sin(pitch)
-	dz = math.cos(yaw)
-	
-	light.position(pos[0], pos[1], pos[2])
-	light.direction(dx, dy, dz)
-
-vizact.ontimer(0, update_flashlight)
+ball = vizshape.addSphere(radius=2)
+ball.setPosition([5, 3, 5])
+ball.color(viz.BLUE)
 
 # === keyboard ===
 
@@ -101,6 +79,31 @@ def OnMouseMove(e):
 	
 viz.callback(viz.MOUSE_MOVE_EVENT, OnMouseMove)
 
+# === lighting ===
+
+def UpdateLighting():
+	pos = viz.MainView.getPosition()
+	yaw, pitch, roll = viz.MainView.getEuler()
+	yaw = math.radians(yaw)
+	pitch = math.radians(pitch)
+	
+	dx = math.sin(yaw)
+	dy = -math.sin(pitch)
+	dz = math.cos(yaw)
+	
+	light.position(pos[0], pos[1], pos[2])
+	light.direction(dx, dy, dz)
+
+viz.setOption('ambient', 0.12)
+viz.MainScene.fogColor(0,0,0)
+viz.MainScene.fog(0, 30)
+
+light = viz.addLight()
+light.enable()
+light.color(1,1,1)
+light.spread(25)
+light.intensity(3.5)
+light.spotexponent(40)
 
 # === game ===
 
@@ -134,6 +137,7 @@ def MovementHandler():
 def MainLoop():
 	while True:
 		MovementHandler()
+		UpdateLighting()
 		time.sleep(0.01)
 		
 viz.director(MainLoop)
