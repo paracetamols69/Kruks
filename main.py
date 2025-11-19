@@ -7,6 +7,8 @@ import time
 
 viz.go()
 
+print("hello nger")
+
 viz.window.setSize([1920, 1080])
 viz.mouse.setVisible(False)
 viz.mouse.setTrap(True)
