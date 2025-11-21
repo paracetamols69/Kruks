@@ -9,22 +9,17 @@ import time
 
 viz.go()
 
-viz.window.setSize([1920, 1080])
+viz.window.setSize([1280, 720])
 viz.mouse.setVisible(False)
 viz.mouse.setTrap(True)
 viz.mouse.setOverride(viz.ON)
 viz.window.setName("kruks")
 
-
-floor = vizshape.addPlane(size=(50,50), axis=vizshape.AXIS_Y, cullFace=False)
-floor.setPosition(0, 0, 0)
-floor.color(viz.RED)
+floor = viz.add("./assets/models/map.glb")
+floor.setPosition([0, 0, 0])
 
 viz.MainView.setPosition([0, 1.8, 0])
-
-ball = vizshape.addSphere(radius=2)
-ball.setPosition([5, 3, 5])
-ball.color(viz.BLUE)
+viz.MainView.collision(True)
 
 # === keyboard ===
 
@@ -63,7 +58,7 @@ def OnKeyUp(e):
 viz.callback(viz.KEYDOWN_EVENT, OnKeyDown)
 viz.callback(viz.KEYUP_EVENT, OnKeyUp)
 
-# === mouse 
+# === mouse ===
 
 SENSITIVITY = 0.1
 yaw = 0.0
@@ -81,34 +76,42 @@ viz.callback(viz.MOUSE_MOVE_EVENT, OnMouseMove)
 
 # === lighting ===
 
+viz.setOption('ambient', 0.25)
+viz.MainScene.fogColor(0,0,0)
+viz.MainScene.fog(0, 30)
+
+directional_light = viz.addLight()
+directional_light.enable()
+directional_light.color(1, 1, 0.95)
+directional_light.intensity(2)
+directional_light.position(0, 10, 0)
+directional_light.direction(0, -1, 0)
+directional_light.spread(180)
+
+player_light = viz.addLight()
+player_light.enable()
+player_light.color(1, 1, 1)
+player_light.spread(90)
+player_light.intensity(0.6)
+player_light.spotexponent(10)
+
 def UpdateLighting():
 	pos = viz.MainView.getPosition()
 	yaw, pitch, roll = viz.MainView.getEuler()
 	yaw = math.radians(yaw)
 	pitch = math.radians(pitch)
 	
-	dx = math.sin(yaw)
+	dx = math.sin(yaw) * math.cos(pitch)
 	dy = -math.sin(pitch)
-	dz = math.cos(yaw)
+	dz = math.cos(yaw) * math.cos(pitch)
 	
-	light.position(pos[0], pos[1], pos[2])
-	light.direction(dx, dy, dz)
-
-viz.setOption('ambient', 0.12)
-viz.MainScene.fogColor(0,0,0)
-viz.MainScene.fog(0, 30)
-
-light = viz.addLight()
-light.enable()
-light.color(1,1,1)
-light.spread(25)
-light.intensity(3.5)
-light.spotexponent(40)
+	player_light.position(pos[0], pos[1] + 0.3, pos[2])
+	player_light.direction(dx, dy, dz)
 
 # === game ===
 
 SPEED = 0.1
-
+				
 def MovementHandler():
 	global yaw
 	
@@ -132,17 +135,17 @@ def MovementHandler():
 		
 	new_x = pos[0] + move_x
 	new_z = pos[2] + move_z
+	
+	print(pos)
+	#if not Collision():
 	viz.MainView.setPosition([new_x, pos[1], new_z])
-		
+
+
 def MainLoop():
 	while True:
 		MovementHandler()
 		UpdateLighting()
 		time.sleep(0.01)
-		
+
+
 viz.director(MainLoop)
-
-
-	
-	
-	
