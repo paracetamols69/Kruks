@@ -21,6 +21,9 @@ floor.setPosition([0, 0, 0])
 iesniegums = viz.add("./assets/models/iesniegums.glb")
 iesniegums.setPosition([10, 1.7, 3.99])
 
+lideris = viz.add("./assets/models/lideris.glb")
+lideris.setPosition([0, 0.0, 3.99])
+
 viz.MainView.setPosition([0, 1.8, 0])
 viz.MainView.collision(True)
 
