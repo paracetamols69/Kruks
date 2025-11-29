@@ -18,15 +18,95 @@ viz.window.setName("kruks")
 floor = viz.add("./assets/models/map.glb")
 floor.setPosition([0, 0, 0])
 
-iesniegums = viz.add("./assets/models/iesniegums.glb")
-iesniegums.setPosition([10, 1.7, 3.99])
+itemPickupText = viz.addText("", parent=viz.SCREEN)
 
-lideris = viz.add("./assets/models/lideris.glb")
-lideris.setPosition([0, 0.0, 3.99])
+itemPickupText.setPosition(0.5, 0.3)
+itemPickupText.setScale([0.3, 0.4, 0])
+itemPickupText.alignment(viz.TEXT_CENTER_CENTER)
+itemPickupText.color(0.72, 0.72, 0.72)
+
+
+# [object, [x,y,z], maxDistance, [yaw0, yaw1], objectName]
+gameObjects = [
+	[viz.add("./assets/models/iesniegums.glb"), [10, 1.7, 3.99], 1.5, [-90, 90], "Iesniegums"]
+]
+
+for i in gameObjects:
+	i[0].setPosition(i[1])
 
 viz.MainView.setPosition([0, 1.8, 0])
 viz.MainView.collision(True)
 
+# === random testing function(s) ===
+
+def GetDistance(playerPos, objectPos) -> float:
+	return math.sqrt((objectPos[0]-playerPos[0]) ** 2 + (objectPos[1]-playerPos[1]) ** 2 + (objectPos[2]-playerPos[2]) ** 2)
+	
+def GetNearestObject():
+	nearest = None
+	temp = 99999.9
+	temp2 = None
+	pos = viz.MainView.getPosition()
+	for i in gameObjects:
+		objpos = i[1]
+		if GetDistance(pos, objpos) < temp:
+			temp = GetDistance(pos, objpos)
+			temp2 = i
+			
+	return temp2
+		
+
+gettableItem = None
+
+def EnableItemCollect(obj):
+	global gettableItem, itemPickupText
+	if gettableItem == None:
+		gettableItem = obj[4]
+		itemPickupText.message(f"{gettableItem}\n[E] to collect")
+	
+def DisableItemCollect():
+	global gettableItem, itemPickupText
+	if gettableItem != None:
+		gettableItem = None
+		itemPickupText.message("")
+	
+def ShowObjectInfo():
+	'''
+	get nearest object (obj)
+	if distance to obj < minimum required distance and yaw within limits:
+	show context menu for pickup and make info global
+	'''
+	nearest = GetNearestObject()
+	
+	if nearest == None:
+		print("No object.")
+		return
+		
+	player_pos = viz.MainView.getPosition()
+	player_yaw = viz.MainView.getEuler()[0]
+	
+	if GetDistance(player_pos, nearest[1]) < nearest[2]:
+		if player_yaw >= nearest[3][0] and player_yaw <= nearest[3][1]:
+			EnableItemCollect(nearest)
+			return
+			
+		DisableItemCollect()
+		
+	DisableItemCollect()
+	
+
+def AttemptCollect():
+	global gettableItem, gameObjects
+	
+	nearest = GetNearestObject()
+	
+	if nearest[4] == gettableItem:
+		nearest[0].remove()
+		gameObjects.remove(nearest)
+		DisableItemCollect()
+	
+	
+	
 # === keyboard ===
 
 KEY_W = False
@@ -59,7 +139,10 @@ def OnKeyUp(e):
 		KEY_S = False
 	if key == "d":
 		KEY_D = False
-		
+	if key == "p":
+		print(viz.MainView.getEuler())
+	if key == "e":
+		AttemptCollect()
 		
 viz.callback(viz.KEYDOWN_EVENT, OnKeyDown)
 viz.callback(viz.KEYUP_EVENT, OnKeyUp)
@@ -77,6 +160,8 @@ def OnMouseMove(e):
 	pitch -= e.dy * SENSITIVITY
 	pitch = max(-89.0, min(89.0, pitch))
 	viz.MainView.setEuler([yaw, pitch, 0])
+	
+	ShowObjectInfo()
 	
 viz.callback(viz.MOUSE_MOVE_EVENT, OnMouseMove)
 
@@ -129,21 +214,23 @@ def MovementHandler():
 	if KEY_W:
 		move_x += math.sin(yaw_rad) * SPEED
 		move_z += math.cos(yaw_rad) * SPEED
+		ShowObjectInfo()
 	if KEY_S:
 		move_x -= math.sin(yaw_rad) * SPEED
 		move_z -= math.cos(yaw_rad) * SPEED
+		ShowObjectInfo()
 	if KEY_A:
 		move_x -= math.cos(yaw_rad) * SPEED
 		move_z += math.sin(yaw_rad) * SPEED
+		ShowObjectInfo()
 	if KEY_D:
 		move_x += math.cos(yaw_rad) * SPEED
 		move_z -= math.sin(yaw_rad) * SPEED
+		ShowObjectInfo()
 		
 	new_x = pos[0] + move_x
 	new_z = pos[2] + move_z
 	
-	print(pos)
-	#if not Collision():
 	viz.MainView.setPosition([new_x, pos[1], new_z])
 
 
